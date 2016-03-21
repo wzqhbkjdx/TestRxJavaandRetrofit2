@@ -3,6 +3,7 @@ package com.example.bym.testofretrofit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -30,13 +31,17 @@ public class MainActivity extends AppCompatActivity {
     private MySubscriber mySubscriber;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mySubscriber = new MySubscriber();
+
+
+
 
         bt_getData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,10 +53,7 @@ public class MainActivity extends AppCompatActivity {
         bt_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!mySubscriber.isUnsubscribed()) {
-                    mySubscriber.unsubscribe();
-                    Toast.makeText(MainActivity.this,"请求被取消",Toast.LENGTH_SHORT).show();
-                }
+
             }
         });
 
@@ -73,8 +75,34 @@ public class MainActivity extends AppCompatActivity {
 
     private void getResult() {
 //        Toast.makeText(MainActivity.this,"获取数据测试",Toast.LENGTH_SHORT).show();
+        mySubscriber = new MySubscriber(); //每次建立连接必须新建一个Subscriber
         HttpMethods.getInstance().getTopMovie(mySubscriber ,0 ,10);
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(mySubscriber != null) {
+            if(!mySubscriber.isUnsubscribed()){
+                mySubscriber.unsubscribe();
+                Toast.makeText(MainActivity.this,"解除绑定OnBackPressed",Toast.LENGTH_SHORT).show();
+                Log.i("MainActivity","解除绑定OnBackPressed");
+            }
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mySubscriber != null) {
+            if(!mySubscriber.isUnsubscribed()){
+                mySubscriber.unsubscribe();
+                Toast.makeText(MainActivity.this,"解除绑定OnDestroy",Toast.LENGTH_SHORT).show();
+                Log.i("MainActivity","解除绑定OnDestroy");
+            }
+        }
     }
 
     private class MySubscriber extends Subscriber<List<Subject>> {
@@ -86,11 +114,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(Throwable e) {
-
+            Toast.makeText(MainActivity.this,"获取数据出现问题",Toast.LENGTH_SHORT).show();
+            tv_result.setText(e.toString());
         }
 
         @Override
         public void onNext(List<Subject> subjects) {
+            Log.i("MainActivity","还是获取到了数据");
             tv_result.setText(subjects.toString());
         }
     }

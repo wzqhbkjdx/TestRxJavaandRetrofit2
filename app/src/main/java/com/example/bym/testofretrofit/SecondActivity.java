@@ -56,4 +56,6 @@ public class SecondActivity extends Activity {
     private void getMovie() {
         HttpMethods.getInstance().getTopMovie(new ProgressSubscriber(getTopMovieOnNext, SecondActivity.this), 0, 10);
     }
+
+
 }
